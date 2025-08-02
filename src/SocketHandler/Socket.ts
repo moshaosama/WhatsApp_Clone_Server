@@ -1,3 +1,5 @@
+import { ResponseMessage } from "../Controller/Chats/ResponseMessage";
+import { SendMessage } from "../Controller/Chats/SendMessage";
 import { Createuser } from "../Controller/Users/CreateUser";
 import { DeleteUser } from "../Controller/Users/DeleteUser";
 import { GetUserById } from "../Controller/Users/getUserByid";
@@ -20,14 +22,23 @@ export const handleSocket = (io: any) => {
       await DeleteUser(socket.id);
     });
 
-    socket.emit("get-sockets", async () => {
+    socket.on("get-sockets", async () => {
       const users = await GetUsers();
-      io.emit("get-sockets", users);
+      socket.emit("get-sockets", users);
     });
 
     socket.on("set-user-by-id", async (data: any) => {
       const user = await GetUserById(data);
       socket.emit("get-user-by-id", user);
     });
+
+    socket.on(
+      "send-message-client",
+      (data: { receiverId: string; message: string }) => {
+        io.to(data.receiverId).emit("send-message-server", data.message);
+        ResponseMessage({ message: data.message, user_id: data.receiverId });
+        SendMessage({ message: data.message, user_id: socket.id });
+      }
+    );
   });
 };
