@@ -8,3 +8,4 @@ export const Createuser = async (user: { id: string; userName: string }) => {
 
   await DB.promise().query(QueryCreateuser, ValueCreateUser);
 };
+
